@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Learning Platform - Personalized Learning Experience</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Loading spinner -->
+        <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <span class="logo-icon">🧠</span>
+                    <span class="logo-text">LearnAI</span>
+                </div>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="#" onclick="app.navigateTo('dashboard')">Dashboard</a></li>
+                    <li><a href="#" onclick="app.navigateTo('topics')">Topics</a></li>
+                    <li><a href="#" onclick="app.navigateTo('progress')">Progress</a></li>
+                    <li><a href="#" onclick="app.logout()" class="logout-btn">Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content area -->
+        <main class="main-content">
+            <!-- Login/Register Page -->
+            <section id="auth-page" class="page">
+                <div class="auth-container">
+                    <div class="auth-card">
+                        <h1>Welcome to LearnAI</h1>
+                        <p class="subtitle">Personalized Learning Powered by AI</p>
+
+                        <!-- Login Form -->
+                        <div id="login-form" class="auth-form active">
+                            <h2>Sign In</h2>
+                            <form onsubmit="app.handleLogin(event)">
+                                <input type="email" placeholder="Email" id="loginEmail" required>
+                                <input type="password" placeholder="Password" id="loginPassword" required>
+                                <button type="submit" class="btn btn-primary">Sign In</button>
+                            </form>
+                            <p class="auth-toggle">Don't have an account? <a href="#"
+                                    onclick="app.toggleAuthForm(event)">Sign Up</a></p>
+                        </div>
+
+                        <!-- Register Form -->
+                        <div id="register-form" class="auth-form">
+                            <h2>Create Account</h2>
+                            <form onsubmit="app.handleRegister(event)">
+                                <input type="email" placeholder="Email" id="registerEmail" required>
+                                <input type="text" placeholder="Username (3-20 chars)" id="registerUsername" required>
+                                <input type="password" placeholder="Password (8+ chars, uppercase, digit)"
+                                    id="registerPassword" required>
+                                <button type="submit" class="btn btn-primary">Sign Up</button>
+                            </form>
+                            <p class="auth-toggle">Already have an account? <a href="#"
+                                    onclick="app.toggleAuthForm(event)">Sign In</a></p>
+                        </div>
+
+                        <div id="auth-message" class="message"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Page -->
+            <section id="dashboard-page" class="page hidden">
+                <div class="container">
+                    <div class="dashboard-header">
+                        <div class="user-info">
+                            <h1>Welcome, <span id="username"></span>!</h1>
+                            <p class="user-level">Current Level: <strong id="userLevel">Beginner</strong></p>
+                        </div>
+                        <div class="quick-stats">
+                            <div class="stat-card">
+                                <span class="stat-value" id="totalPoints">0</span>
+                                <span class="stat-label">Total Points</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value" id="avgAccuracy">0%</span>
+                                <span class="stat-label">Avg Accuracy</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value" id="topicsStudied">0</span>
+                                <span class="stat-label">Topics Studied</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <!-- Performance Chart -->
+                        <div class="card">
+                            <h2>Performance Overview</h2>
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="card">
+                            <h2>📚 Recommended Next Steps</h2>
+                            <div id="recommendations-list" class="recommendations">
+                                <p class="loading">Loading recommendations...</p>
+                            </div>
+                        </div>
+
+                        <!-- Insights -->
+                        <div class="card">
+                            <h2>📊 Learning Insights</h2>
+                            <div id="insights-container" class="insights">
+                                <p class="loading">Loading insights...</p>
+                            </div>
+                        </div>
+
+                        <!-- Progress by Topic -->
+                        <div class="card">
+                            <h2>Topics Progress</h2>
+                            <div id="progress-list" class="progress-list">
+                                <p class="loading">Loading progress...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topics Page -->
+            <section id="topics-page" class="page hidden">
+                <div class="container">
+                    <h1>Learning Topics</h1>
+                    <div class="filters">
+                        <button class="filter-btn active" onclick="app.filterTopics('all')">All</button>
+                        <button class="filter-btn" onclick="app.filterTopics('Beginner')">Beginner</button>
+                        <button class="filter-btn" onclick="app.filterTopics('Intermediate')">Intermediate</button>
+                        <button class="filter-btn" onclick="app.filterTopics('Advanced')">Advanced</button>
+                    </div>
+                    <div class="topics-grid" id="topicsGrid">
+                        <p class="loading">Loading topics...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topic Detail Page -->
+            <section id="topic-detail-page" class="page hidden">
+                <div class="container">
+                    <button class="btn-back" onclick="app.navigateTo('topics')">← Back to Topics</button>
+                    <div class="topic-detail">
+                        <div class="topic-header">
+                            <h1 id="topicTitle"></h1>
+                            <p id="topicDescription"></p>
+                            <div class="topic-meta">
+                                <span class="difficulty" id="topicDifficulty"></span>
+                                <span class="category" id="topicCategory"></span>
+                            </div>
+                        </div>
+
+                        <div class="topic-content">
+                            <div id="topicContent" class="content-area"></div>
+                        </div>
+
+                        <button class="btn btn-primary btn-large" onclick="app.startQuiz()">Start Quiz</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quiz Page -->
+            <section id="quiz-page" class="page hidden">
+                <div class="container">
+                    <div class="quiz-header">
+                        <div class="quiz-progress">
+                            <div class="progress-bar">
+                                <div id="progressFill" class="progress-fill"></div>
+                            </div>
+                            <span id="questionNumber">Question 1 of 5</span>
+                        </div>
+                        <div class="quiz-stats">
+                            <span>⏱️ <span id="timeSpent">0</span>s</span>
+                            <span>✓ <span id="correctCount">0</span> / <span id="totalCount">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-container">
+                        <div class="question-card">
+                            <h2 id="questionText"></h2>
+                            <div id="optionsContainer" class="options-grid"></div>
+                            <div id="feedbackContainer" class="feedback hidden">
+                                <div id="feedbackText" class="feedback-text"></div>
+                                <button class="btn btn-primary" onclick="app.nextQuestion()">Next Question</button>
+                            </div>
+                            <button id="submitBtn" class="btn btn-primary" onclick="app.submitAnswer()">Submit
+                                Answer</button>
+                        </div>
+                    </div>
+
+                    <button class="btn-close-quiz" onclick="app.endQuiz()">× End Quiz</button>
+                </div>
+            </section>
+
+            <!-- Progress Page -->
+            <section id="progress-page" class="page hidden">
+                <div class="container">
+                    <h1>Your Learning Progress</h1>
+
+                    <div class="progress-cards">
+                        <div class="card">
+                            <h3>Overall Statistics</h3>
+                            <div class="stats-grid">
+                                <div class="stat">
+                                    <span class="label">Total Time Spent</span>
+                                    <span class="value" id="totalTime">0 min</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="label">Accuracy Rate</span>
+                                    <span class="value" id="accuracyRate">0%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="label">Questions Answered</span>
+                                    <span class="value" id="questionsAnswered">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Detailed Progress</h3>
+                            <div id="detailedProgress" class="detailed-progress"></div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Performance Trend</h3>
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Toast notification -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>
